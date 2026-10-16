@@ -1,69 +1,50 @@
-# Crypto mining pools aggregator (domains + IPs)
+    # Mining pool list aggregator
 
-## Description
-Simple tool that aggregates all the crypto mining pool lists I was able to find online. Includes both domains and IPs.
+    **Hellfire4959's fork** of [ilmoi/mining-pools-aggregator](https://github.com/ilmoi/mining-pools-aggregator). The project combines source lists into domain, IP, CIDR and hosts-file outputs. This fork retains the inherited source code and list data; existing files are a historical snapshot, not newly verified detections.
 
-Outputs:
-- Aggregate top level domains list (`lists/tlds.txt`) ~10k lines
-- Aggregate domains with subdomains list (`lists/urls.txt`) ~130k lines
-- Aggregate IPs list (`lists/ips.txt`) ~10k lines
-- Aggregate CIDRs list (`lists/cidrs.txt`) ~10k lines
-- Aggregate Hosts file (`hosts/hosts`) ~140k lines
- 
-## Installation
+    ## Use existing outputs
 
-1. Make sure you have python `3.x` on your system.
-2. `pip install pipenv` if you don't have it already.
-3. `cd` into the dir and run `pipenv install`.
- 
-## Usage
+    | File | Contents |
+    | --- | --- |
+    | [lists/tlds.txt](lists/tlds.txt) | Aggregated top-level domain entries |
+    | [lists/urls.txt](lists/urls.txt) | Domain entries including subdomains |
+    | [lists/ips.txt](lists/ips.txt) | IP addresses |
+    | [lists/cidrs.txt](lists/cidrs.txt) | Network ranges |
+    | [hosts/hosts](hosts/hosts) | Hosts-file entries mapped to `0.0.0.0` |
 
-#### TL;DR;
+    Review the source and freshness of a list before using it in filtering. A mining-pool entry describes a category; it is not, by itself, a maliciousness verdict. Line counts in the original documentation refer to its historical run.
 
-You can use the files in `hosts` and `lists` folders as is.
+    ## Rebuild the lists
 
-To refresh sources and re-aggregate lists run: 
+    The inherited project uses Python 3 and Pipenv; dependencies are defined in [Pipfile](Pipfile) and its lockfile.
 
-```
-./refresh.sh
-```
+    ```bash
+    git clone https://github.com/Hellfire4959/mining-pools-aggregator.git
+    cd mining-pools-aggregator
+    python -m pip install pipenv
+    pipenv install
+    bash refresh.sh
+    ```
 
-Give it some time (around 20min on 2018 13" MacBook Pro.) 
+    `refresh.sh` retrieves configured sources, resolves domains and rewrites generated lists. It needs network access and may take time; legacy dependencies and external source availability can affect a fresh run. The cleanup did not perform a network refresh of the lists.
 
-Output:
-```
-> DONE. Lists generated and contain 9885 TLDs, 131566 URLs and 8270 IPs.
-> DONE. Hosts file generated and contains 141451 items.
-```
+    ## Repository map
 
-#### Under the hood
+    | Path | Role |
+    | --- | --- |
+    | [blacklists/](blacklists/) | Source lists and generated IP-source lists |
+    | [whitelists/](whitelists/) | Entries removed during aggregation |
+    | [excluded/](excluded/) | Sources excluded by the original project |
+    | [generate_lists.py](generate_lists.py) | Combine, subtract, deduplicate and sort lists |
+    | [generate_ips_from_lists.py](generate_ips_from_lists.py) | Resolve generated domain lists |
+    | [generate_hosts.py](generate_hosts.py) | Build hosts-file output |
+    | [helpers.py](helpers.py) | Shared parsing and aggregation logic |
+    | [UPSTREAM_README.md](UPSTREAM_README.md) | Original instructions and historical example output |
 
-```
-pipenv run python generate_lists.py
-```
-aggregates all files in blacklists folder into one, subtracts anything from whitelists folder, deduplicates, orders alphabetically. Output saved in `lists` folder. 
+    ## Extend or contribute
 
-```
-pipenv run python generate_ips_from_lists.py
-```
-uses the files generated in previous steps and attempts to find IP addresses for each of the urls in those files. Output saved back into `blacklists` folder under names `ips_from_tlds` and `ips_from_urls`.
+    Add entries to the existing custom blacklist/whitelist files. Follow the source-file conventions in the original README when adding a URL-backed source. Keep attribution with new lists and submit a pull request with the expected output differences. Official upstream changes belong in the upstream project's process.
 
-```
-pipenv run python generate_hosts.py
-``` 
-aggregates `tlds` and `urls` into a single `hosts` file with `0.0.0.0` prefixed on each line.
-
-`helpers.py` is where most of the logic lives. Functions are commented and should be self-explanatory.
-
-There's a few lists that I found but that didn't make the cut saved into `excluded` dir. Mainly because of formatting issues.
-
-## How to extend?
-
-- Add urls to blacklist into `blacklists/CUSTOM_blacklist.txt`
-- Add urls to whitelist into `whitelists/CUSTOM_whitelist.txt`
-- To add new sources, create a file in either `blacklists` or `whitelists` folder then either paste your list directly, or if you're pulling from a url paste the url onto the first line. Python will do the rest to pull the contents and populate the file. Be sure to post the raw link (ie without html) - see current files for inspiration.  
-
- 
 ## Credits
 
 All the credit goes to the folk who put together the original lists. This is merely an aggregator.
@@ -78,7 +59,3 @@ Ordered alphabetically:
 - [hoshsadiq/adblock-nocoin-list](https://github.com/hoshsadiq/adblock-nocoin-list)
 - [Marfjeh/coinhive-block](https://github.com/Marfjeh/coinhive-block)
 - [ZeroDot1/CoinBlockerLists](https://gitlab.com/ZeroDot1/CoinBlockerLists)
-
-## Contributions
-
-Welcome. Just issue a PR.
